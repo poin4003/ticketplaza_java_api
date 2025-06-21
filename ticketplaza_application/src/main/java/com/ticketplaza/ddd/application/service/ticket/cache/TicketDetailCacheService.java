@@ -1,5 +1,7 @@
 package com.ticketplaza.ddd.application.service.ticket.cache;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.ticketplaza.ddd.domain.model.entity.TicketDetail;
 import com.ticketplaza.ddd.domain.service.TicketDetailDomainService;
 import com.ticketplaza.ddd.infrastructure.cache.redis.RedisInfrasService;
@@ -21,13 +23,34 @@ public class TicketDetailCacheService {
     @Autowired
     private TicketDetailDomainService ticketDetailDomainService;
 
-    public TicketDetail getTicketDefaultCache(Long id, Long version) {
-        log.info("Implement getTicketDefaultCache ->, {}, {}", id, version);
-        TicketDetail ticketDetail = redisInfrasService.getObject(genEventItemKey(id), TicketDetail.class);
+    // use guava
+    private final static Cache<Long, TicketDetail> ticketDetailLocalCache = CacheBuilder.newBuilder()
+            .initialCapacity(10)
+            .concurrencyLevel(8)
+            .expireAfterWrite(10, TimeUnit.MINUTES)
+            .build();
 
-        // 2. YES -> Cache hit
+    private TicketDetail getTicketDetailLocalCache(Long id, Long version) {
+        try {
+            return ticketDetailLocalCache.getIfPresent(id);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public TicketDetail getTicketDefaultCache(Long id, Long version) {
+        // 1. Get Item local cache
+        TicketDetail ticketDetail = getTicketDetailLocalCache(id, version);
         if (ticketDetail != null) {
-            log.info("FROM CACHE EXIST {}", ticketDetail);
+            log.info("FROM LOCAL CACHE EXIST {}", ticketDetail);
+            return ticketDetail;
+        }
+
+        // 2. Get Distributed cache
+        ticketDetail = redisInfrasService.getObject(genEventItemKey(id), TicketDetail.class);
+        if (ticketDetail != null) {
+            log.info("FROM DISTRIBUTED CACHE EXIST {}", ticketDetail);
+            ticketDetailLocalCache.put(id, ticketDetail); // Set item to local cache
             return ticketDetail;
         }
 
@@ -47,6 +70,7 @@ public class TicketDetailCacheService {
             // 2. YES -> Hit cache
             if (ticketDetail != null) {
                 log.info("FROM CACHE {}, {}, {}",  id, version, ticketDetail);
+                ticketDetailLocalCache.put(id, ticketDetail); // Set item to local cache
                 return ticketDetail;
             }
 
@@ -57,10 +81,12 @@ public class TicketDetailCacheService {
                 log.info("TICKET NOT EXIST....{}", version);
                 // Set cache
                 redisInfrasService.setObject(genEventItemKey(id), null);
+                ticketDetailLocalCache.put(id, null); // Set item to local cache
                 return null;
             }
 
             redisInfrasService.setObject(genEventItemKey(id), ticketDetail);
+            ticketDetailLocalCache.put(id, ticketDetail);
             return ticketDetail;
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -70,6 +96,6 @@ public class TicketDetailCacheService {
     }
 
     private String genEventItemKey(Long itemId) {
-        return "TICKET:ITEM:" +  itemId;
+        return "TICKET:ITEM:" + itemId;
     }
 }
