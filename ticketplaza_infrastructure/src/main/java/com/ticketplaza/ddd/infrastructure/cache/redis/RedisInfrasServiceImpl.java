@@ -102,4 +102,9 @@ public class RedisInfrasServiceImpl implements RedisInfrasService {
             log.error("Error setting key '{}' with expireTime (seconds): {}", key, e.getMessage());
         }
     }
+
+    @Override
+    public void delete(String key) {
+        redisTemplate.delete(key);
+    }
 }

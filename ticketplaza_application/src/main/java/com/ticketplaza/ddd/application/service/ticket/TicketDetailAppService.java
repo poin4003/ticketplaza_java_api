@@ -4,4 +4,5 @@ import com.ticketplaza.ddd.domain.model.entity.TicketDetail;
 
 public interface TicketDetailAppService {
     TicketDetail getTicketDetailById(Long ticketId);
+    boolean orderTicketByUser(Long ticketId);
 }

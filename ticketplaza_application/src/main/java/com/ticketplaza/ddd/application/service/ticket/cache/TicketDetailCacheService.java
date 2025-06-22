@@ -95,6 +95,14 @@ public class TicketDetailCacheService {
         }
     }
 
+    public boolean orderTicketByUser(Long ticketId) {
+        ticketDetailLocalCache.invalidate(ticketId); // Remove local cache
+
+        redisInfrasService.delete(genEventItemKey(ticketId));
+
+        return true;
+    }
+
     private String genEventItemKey(Long itemId) {
         return "TICKET:ITEM:" + itemId;
     }

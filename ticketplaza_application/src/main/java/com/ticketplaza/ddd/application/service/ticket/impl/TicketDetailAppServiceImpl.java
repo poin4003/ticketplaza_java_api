@@ -19,4 +19,9 @@ public class TicketDetailAppServiceImpl implements TicketDetailAppService {
         log.info("Implement Application: {}", ticketId);
         return ticketDetailCacheService.getTicketDefaultCache(ticketId, System.currentTimeMillis());
     }
+
+    @Override
+    public boolean orderTicketByUser(Long ticketId) {
+        return ticketDetailCacheService.orderTicketByUser(ticketId);
+    }
 }

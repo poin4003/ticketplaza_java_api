@@ -6,10 +6,7 @@ import com.ticketplaza.ddd.controller.model.vo.ResultMessage;
 import com.ticketplaza.ddd.domain.model.entity.TicketDetail;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/ticket")
@@ -26,5 +23,12 @@ public class TicketDetailController {
     ) {
         log.info("TicketId: {}, detailId: {}", ticketId, detailId);
         return ResultUtil.data(ticketDetailAppService.getTicketDetailById(detailId));
+    }
+
+    @GetMapping("/{ticketId}")
+    public boolean orderTicketByUser(
+            @PathVariable("ticketId") Long ticketId
+    ) {
+        return ticketDetailAppService.orderTicketByUser(ticketId);
     }
 }

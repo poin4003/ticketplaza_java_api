@@ -9,4 +9,5 @@ public interface RedisInfrasService {
     <T> T getObject(String key, Class<T> targetClass);
     void put(String key, Object value, long timeout, TimeUnit unit);
     void put(String key, Object value, long expireTime);
+    void delete(String key);
 }
