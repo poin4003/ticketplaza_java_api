@@ -1,5 +1,6 @@
 package com.ticketplaza.ddd.controller.http;
 
+import com.ticketplaza.ddd.application.model.TicketDetailDTO;
 import com.ticketplaza.ddd.application.service.ticket.TicketDetailAppService;
 import com.ticketplaza.ddd.controller.model.enums.ResultUtil;
 import com.ticketplaza.ddd.controller.model.vo.ResultMessage;
@@ -17,12 +18,13 @@ public class TicketDetailController {
     private TicketDetailAppService ticketDetailAppService;
 
     @GetMapping("/{ticketId}/detail/{detailId}")
-    public ResultMessage<TicketDetail> getTicketDetail(
+    public ResultMessage<TicketDetailDTO> getTicketDetail(
         @PathVariable("ticketId") Long ticketId,
-        @PathVariable("detailId") Long detailId
+        @PathVariable("detailId") Long detailId,
+        @RequestParam(name = "version", required = false) Long version
     ) {
         log.info("TicketId: {}, detailId: {}", ticketId, detailId);
-        return ResultUtil.data(ticketDetailAppService.getTicketDetailById(detailId));
+        return ResultUtil.data(ticketDetailAppService.getTicketDetailById(detailId, version));
     }
 
     @GetMapping("/{ticketId}")

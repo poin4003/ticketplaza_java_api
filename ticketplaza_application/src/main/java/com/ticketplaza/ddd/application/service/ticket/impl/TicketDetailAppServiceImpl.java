@@ -1,6 +1,9 @@
 package com.ticketplaza.ddd.application.service.ticket.impl;
 
 
+import com.ticketplaza.ddd.application.mapper.TicketDetailMapper;
+import com.ticketplaza.ddd.application.model.TicketDetailDTO;
+import com.ticketplaza.ddd.application.model.cache.TicketDetailCache;
 import com.ticketplaza.ddd.application.service.ticket.TicketDetailAppService;
 import com.ticketplaza.ddd.application.service.ticket.cache.TicketDetailCacheService;
 import com.ticketplaza.ddd.domain.model.entity.TicketDetail;
@@ -15,9 +18,21 @@ public class TicketDetailAppServiceImpl implements TicketDetailAppService {
     private TicketDetailCacheService ticketDetailCacheService;
 
     @Override
-    public TicketDetail getTicketDetailById(Long ticketId) {
-        log.info("Implement Application: {}", ticketId);
-        return ticketDetailCacheService.getTicketDefaultCache(ticketId, System.currentTimeMillis());
+    public TicketDetailDTO getTicketDetailById(Long ticketId, Long version) {
+        log.info("Implement Application: {}, {}", ticketId, version);
+        TicketDetailCache ticketDetailCache = ticketDetailCacheService.getTicketDetail(ticketId, version);
+        if (ticketDetailCache == null) {
+            log.warn("Ticket Detail Cache is empty for ID {}", ticketId);
+            return null;
+        }
+        // mapper to DTO
+        TicketDetailDTO ticketDetailDTO = TicketDetailMapper.mapperToTicketDetailDTO(ticketDetailCache.getTicketDetail());
+        if (ticketDetailDTO == null) {
+            log.warn("Ticket Detail DTO is null for ID {}", ticketId);
+            return null;
+        }
+        ticketDetailDTO.setVersion(ticketDetailCache.getVersion());
+        return ticketDetailDTO;
     }
 
     @Override
