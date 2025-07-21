@@ -2,14 +2,13 @@ package com.ticketplaza.ddd.domain.service.impl;
 
 import com.ticketplaza.ddd.domain.repository.HiDomainRepository;
 import com.ticketplaza.ddd.domain.service.HiDomainService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class HiDomainServiceImpl implements HiDomainService {
-
-    @Autowired
-    private HiDomainRepository hiDomainRepository;
+    private final HiDomainRepository hiDomainRepository;
 
     @Override
     public String sayHi(String Who) {

@@ -3,7 +3,7 @@ package com.ticketplaza.ddd.controller.http;
 import com.ticketplaza.ddd.application.service.event.EventAppService;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,9 +13,9 @@ import java.security.SecureRandom;
 
 @RestController
 @RequestMapping("/hello")
+@RequiredArgsConstructor
 public class HiController {
-    @Autowired
-    private EventAppService eventAppService;
+    private final EventAppService eventAppService;
 
     private final RestTemplate restTemplate = new RestTemplate();
 

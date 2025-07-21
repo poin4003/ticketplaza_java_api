@@ -107,4 +107,19 @@ public class RedisInfrasServiceImpl implements RedisInfrasService {
     public void delete(String key) {
         redisTemplate.delete(key);
     }
+
+    @Override
+    public RedisTemplate<String, Object> getRedisTemplate() {
+        return redisTemplate;
+    }
+
+    @Override
+    public void setInt(String key, int value) {
+        redisTemplate.opsForValue().set(key, value);
+    }
+
+    @Override
+    public int getInt(String key) {
+        return (int) redisTemplate.opsForValue().get(key);
+    }
 }

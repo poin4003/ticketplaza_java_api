@@ -1,5 +1,7 @@
 package com.ticketplaza.ddd.infrastructure.cache.redis;
 
+import org.springframework.data.redis.core.RedisTemplate;
+
 import java.util.concurrent.TimeUnit;
 
 public interface RedisInfrasService {
@@ -10,4 +12,9 @@ public interface RedisInfrasService {
     void put(String key, Object value, long timeout, TimeUnit unit);
     void put(String key, Object value, long expireTime);
     void delete(String key);
+
+    RedisTemplate<String, Object> getRedisTemplate();
+
+    void setInt(String key, int value);
+    int getInt(String key);
 }

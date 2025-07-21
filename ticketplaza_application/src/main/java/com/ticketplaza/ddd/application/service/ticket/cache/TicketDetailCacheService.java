@@ -8,21 +8,19 @@ import com.ticketplaza.ddd.domain.service.TicketDetailDomainService;
 import com.ticketplaza.ddd.infrastructure.cache.redis.RedisInfrasService;
 import com.ticketplaza.ddd.infrastructure.distributed.redisson.RedisDistributedLocker;
 import com.ticketplaza.ddd.infrastructure.distributed.redisson.RedisDistributedService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class TicketDetailCacheService {
-    @Autowired
-    private RedisDistributedService redisDistributedService;
-    @Autowired
-    private RedisInfrasService redisInfrasService;
-    @Autowired
-    private TicketDetailDomainService ticketDetailDomainService;
+    private final RedisDistributedService redisDistributedService;
+    private final RedisInfrasService redisInfrasService;
+    private final TicketDetailDomainService ticketDetailDomainService;
 
     // use guava
     private final static Cache<Long, TicketDetailCache> ticketDetailLocalCache = CacheBuilder.newBuilder()
@@ -45,8 +43,20 @@ public class TicketDetailCacheService {
         return getTicketDetailDistributedCache(id);
     }
 
+    private TicketDetailCache getTicketDetailDistributedCache(Long ticketId) {
+        // 1 - get data
+        TicketDetailCache ticketDetailCache = redisInfrasService.getObject(genEventItemKey(ticketId), TicketDetailCache.class);
+        if (ticketDetailCache == null) {
+            ticketDetailCache = getTicketDetailDatabase(ticketId);
+        }
+        // 2 - put data to local cache
+        ticketDetailLocalCache.put(ticketId, ticketDetailCache);
+        log.info("GET TICKET FROM DISTRIBUTED LOCK");
+        return ticketDetailCache;
+    }
+
     public TicketDetailCache getTicketDetailDatabase(Long ticketId) {
-        RedisDistributedLocker locker = redisDistributedService.getDistributedLock("PRO_LOCK_KEY_ITEM"+ticketId);
+        RedisDistributedLocker locker = redisDistributedService.getDistributedLock(genEventItemKeyLock(ticketId));
     
         try {
             // 1 - Create lock
@@ -92,28 +102,11 @@ public class TicketDetailCacheService {
         }
     }
 
-    private TicketDetailCache getTicketDetailDistributedCache(Long ticketId) {
-        // 1 - get data
-        TicketDetailCache ticketDetailCache = redisInfrasService.getObject(genEventItemKey(ticketId), TicketDetailCache.class);
-        if (ticketDetailCache == null) {
-            ticketDetailCache = getTicketDetailDatabase(ticketId);
-        }
-        // 2 - put data to local cache
-        ticketDetailLocalCache.put(ticketId, ticketDetailCache);
-        log.info("GET TICKET FROM DISTRIBUTED LOCK");
-        return ticketDetailCache;
+    private String genEventItemKey(Long ticketId) {
+        return "TICKET:ITEM:" + ticketId;
     }
 
-
-    public boolean orderTicketByUser(Long ticketId) {
-        ticketDetailLocalCache.invalidate(ticketId); // Remove local cache
-
-        redisInfrasService.delete(genEventItemKey(ticketId));
-
-        return true;
-    }
-
-    private String genEventItemKey(Long itemId) {
-        return "TICKET:ITEM:" + itemId;
+    private String genEventItemKeyLock(Long ticketId) {
+        return "TICKET:LOCK:" + ticketId;
     }
 }

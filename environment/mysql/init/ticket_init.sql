@@ -61,3 +61,57 @@ INSERT INTO `ticketplaza`.`ticket_item` (
 
 ('Vé VIP', 'Vé VIP cho sự kiện ngày 01/01 với đặc quyền bổ sung', 200, 200, 1,
  1500000, 1200000, '2026-01-01 00:00:00', '2026-01-01 23:59:59', 1, 2);
+
+-- 3. order table
+CREATE TABLE IF NOT EXISTS `ticketplaza`.`ticket_order_202507` (
+    id INT(8) NOT NULL AUTO_INCREMENT COMMENT 'Unique ticket sales ID',
+    user_id INT(8) NOT NULL COMMENT 'userId',
+    order_number VARCHAR(50) NOT NULL COMMENT 'Unique order number',
+    total_amount DECIMAL(10, 3) NOT NULL COMMENT 'Total payment amount',
+    terminal_id VARCHAR(20) NOT NULL COMMENT 'ID of the sales terminal',
+    order_date TIMESTAMP NOT NULL COMMENT 'Date and time of the ticket purchase',
+    order_notes VARCHAR(100) NULL DEFAULT 'None' COMMENT 'Additional notes for the order',
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Timestamp of the last update',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp',
+    PRIMARY KEY (id) USING BTREE,
+    UNIQUE KEY order_number (order_number),
+    KEY order_date (order_date),
+    KEY index_usr_id (user_id)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'order table';
+
+INSERT INTO `ticketplaza`.`ticket_order_202507` (order_number, user_id, total_amount, terminal_id, order_date, order_notes)
+VALUES ('ORD2025070001', 1001, 5.600, 'POS001', '2025-02-28 10:00:00', 'Family trip');
+
+-- 4. order detail table
+CREATE TABLE IF NOT EXISTS `ticketplaza`.`ticket_order_detail_202507` (
+    id INT(8) NOT NULL AUTO_INCREMENT COMMENT 'Unique ticket sales ID',
+    ticket_item_id BIGINT(20) NOT NULL COMMENT 'ticket detail ID',
+    order_number VARCHAR(50) NOT NULL COMMENT 'Reference to the order number',
+    passenger_name VARCHAR(100) NOT NULL COMMENT 'Passenger full name',
+    passenger_id VARCHAR(20) NOT NULL COMMENT 'National ID or passport number',
+    departure_station VARCHAR(10) NOT NULL COMMENT 'Departure station code (e.g., HAN)',
+    arrival_station VARCHAR(10) NULL NULL COMMENT 'Arrival station code (e.g., HAN)',
+    departure_time DATETIME NOT NULL COMMENT 'Train departure time',
+    seat_class ENUM('Economy', 'Business', 'First') NOT NULL COMMENT 'Seat class type',
+    seat_number VARCHAR(10) NOT NULL COMMENT 'Seat number',
+    ticket_price DECIMAL(10, 3) NOT NULL COMMENT 'Price of the individual ticket',
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Timestamp of the last update',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp',
+    PRIMARY KEY (id) USING BTREE,
+    -- FOREIGN KEY (order_number) REFERENCES ticket_order_202507(order_number) ON DELETE CASCADE,
+    KEY order_number (order_number),
+    KEY ticket_item_id (ticket_item_id)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'order table';
+
+INSERT INTO `ticketplaza`.`ticket_order_detail_202507`
+    (ticket_item_id, order_number, passenger_name, passenger_id, departure_station, arrival_station, departure_time, seat_class, seat_number, ticket_price)
+VALUES
+    (4, 'ORD2025020001', 'Nguyen Van A', 'ID123445678', 'SGN', 'HAN', '2025-08-01 08:00:00', 'Economy', 'A1', 1.400),
+    (4, 'ORD2025020001', 'Nguyen Van B', 'ID123445679', 'SGN', 'HAN', '2025-08-01 08:00:00', 'Economy', 'A2', 1.400),
+    (4, 'ORD2025020001', 'Nguyen Van A', 'ID123445680', 'SGN', 'HAN', '2025-08-01 08:00:00', 'Economy', 'A3', 1.400),
+    (4, 'ORD2025020001', 'Nguyen Van A', 'ID123445681', 'SGN', 'HAN', '2025-08-01 08:00:00', 'Economy', 'A4', 1.400);
+
+
+
+
+

@@ -19,10 +19,16 @@ public class Ticket {
     private Long id;
 
     private String name;
+
     private String description;
+
     private Date startTime;
+
     private Date endTime;
+
     private int status;
+
     private Date updatedAt;
+
     private Date createdAt;
 }
